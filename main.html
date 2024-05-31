@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相關係數計算器</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/big-number@2.0.0/big-number.min.js"></script>
+
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js"></script>
+    <!--<script type="module" id="Fraction-script" src="Fraction.js/fraction.js"></script>-->
+    <!--<script id="Fraction-script" src="https://cdn.jsdelivr.net/npm/fraction-math-js@0.2.1/index.min.js"></script>-->
+</head>
+<body>
+    <div class="container">
+        <h1>相關係數計算器</h1>
+        <div class="input-area">
+            <textarea id="inputValues" placeholder="輸入數值，每行一組"></textarea>
+        </div>
+        <div class="result-area">
+            <h2>運算顯示區</h2>
+            <div id="resultValues" class="mathjax-output"></div>
+        </div>
+        <div class="math-input-area">
+            <h2>數學輸入器</h2>
+            <div id="mathInput"></div>
+        </div>
+    </div>
+
+    <script type="module" src="index.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['$$', '$$']],
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+</body>
+</html>
