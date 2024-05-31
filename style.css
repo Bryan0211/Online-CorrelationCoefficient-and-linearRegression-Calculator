@@ -22,13 +22,19 @@ h1 {
     text-align: center;
 }
 
-.input-area, .result-area, .math-input-area {
+.input-area, .result-area {
     margin-top: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
 }
 
 textarea {
     width: 100%;
-    min-height: 50px;
+    min-height: 150px; /* 增加預設高度 */
     padding: 10px;
     border: 1px solid #cccccc;
     border-radius: 5px;
@@ -63,14 +69,5 @@ button:hover {
     border-radius: 5px;
     padding: 10px;
     background-color: #f9f9f9;
-    box-sizing: border-box;
-}
-
-.math-input-area #mathInput {
-    border: 1px solid #cccccc;
-    border-radius: 5px;
-    padding: 10px;
-    min-height: 30px;
-    overflow: hidden;
     box-sizing: border-box;
 }
