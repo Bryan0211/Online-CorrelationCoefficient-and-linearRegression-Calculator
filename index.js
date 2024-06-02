@@ -18,9 +18,9 @@ function updateResultDisplay() {
         return;
     }
 
-    const inputValues = input.split('\n').map(row => row.split(',').map(str => new Fraction(str.trim()).simplify()));
+    const inputValues = input.split('\n').map(row => row.split(/[, ]+/).map(str => new Fraction(str.trim()).simplify()));
     if (inputValues.length < 2 || inputValues[0].length !== 2) {
-        document.querySelector('#resultValues').innerHTML = '請輸入至少兩組數值，每組包含兩個數值，以逗號分隔。';
+        document.querySelector('#resultValues').innerHTML = '請輸入至少兩組數值，每組包含兩個數值，以逗號或空格分隔。';
         MathJax.typeset();
         return;
     }
