@@ -34,7 +34,7 @@ label {
 
 textarea {
     width: 100%;
-    min-height: 150px; /* 增加預設高度 */
+    min-height: 150px;
     padding: 10px;
     border: 1px solid #cccccc;
     border-radius: 5px;
@@ -63,8 +63,8 @@ button:hover {
 
 .result-area #resultValues {
     min-height: 50px;
-    max-height: 200px;
-    overflow: auto;
+    max-height: none;
+    overflow: visible;
     border: 1px solid #cccccc;
     border-radius: 5px;
     padding: 10px;
