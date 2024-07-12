@@ -9,21 +9,26 @@
 
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script src="https://cdn.jsdelivr.net/npm/big-number@2.0.0/big-number.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script> <!-- 添加 p5.js -->
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js"></script>
-    <!--<script type="module" id="Fraction-script" src="https://cdn.jsdelivr.net/gh/Bryan0211/Fraction.js@master/fraction.js"></script>-->
-    <!--<script id="Fraction-script" src="https://cdn.jsdelivr.net/npm/fraction-math-js@0.2.1/index.min.js"></script>-->
 </head>
 <body>
-    <div class="container">
+    <div class="container"ｒ
         <h1>相關係數計算機</h1>
         <div class="input-area">
+            <div class="input-mode-buttons">
+                <button id="mode-1" class="mode-button" onclick="setInputMode(1)">一起輸入X和Y</button>
+                <button id="mode-2" class="mode-button" onclick="setInputMode(2)">分開輸入X和Y</button>
+            </div>
             <label for="inputValues">輸入</label>
-            <textarea id="inputValues" placeholder="輸入用空格或,來分隔X和Y值(X,Y或X Y)&#10;值能用分數(例如2/3)&#10;輸入例子：&#10;1 2&#10;3,4.56&#10;..."></textarea>
+            <textarea id="inputValues" placeholder="輸入用空格或,來分隔X和Y值(X,Y或X Y)\n值能用分數(例如2/3)\n輸入例子：\n1 2\n3,4.56\n..."></textarea>
         </div>
         <div class="result-area">
             <h2>結果：</h2>
             <div id="resultValues" class="mathjax-output"></div>
+            <div class="canvas-container">
+                <div id="scatterPlot"></div> <!-- 用於 p5.js 繪製圖表 -->
+            </div>
         </div>
     </div>
 
@@ -38,6 +43,11 @@
                 fontCache: 'global'
             }
         };
+
+        // Initialize input mode on page load
+        window.addEventListener('load', function() {
+            setInputMode(1);
+        });
     </script>
 </body>
 </html>
