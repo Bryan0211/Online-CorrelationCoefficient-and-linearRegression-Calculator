@@ -95,12 +95,16 @@ function updateResultDisplay() {
     const resultValues = `
         X平均值: \\(\\overline{X} = ${meanX.toLatex()} = ${meanX.valueOf().toFixed(3)}\\)<br>
         Y平均值: \\(\\overline{Y} = ${meanY.toLatex()} = ${meanY.valueOf().toFixed(3)}\\)<br>
-        X標準差: \\(\\sigma_X = ${stdDevX.toLatex()} = ${stdDevX.valueOf().toFixed(3)}\\)<br>
-        Y標準差: \\(\\sigma_Y = ${stdDevY.toLatex()} = ${stdDevY.valueOf().toFixed(3)}\\)<br>
-        相關係數的分子: \\(\\sum{(X_i - \\overline{X})(Y_i - \\overline{Y})}\\ = \\frac{${numerator.toLatex()}}{${sqrtDenominatorX.mul(sqrtDenominatorY).simplify().toLatex()}} = ${intermediateFraction.toLatex()} = ${correlation.valueOf().toFixed(3)}\\)<br>
-        回歸直線: \\(Y - ${meanY.toLatex()} = (${regressionSlope.toLatex()})(X - ${meanX.toLatex()})\\)<br>
+        X標準差: \\(\\sigma_X = \\sqrt{\\frac{1}{n} \\sum (X_i - \\overline{X})^2} = ${stdDevX.toLatex()} = ${stdDevX.valueOf().toFixed(3)}\\)<br>
+        Y標準差: \\(\\sigma_Y = \\sqrt{\\frac{1}{n} \\sum (Y_i - \\overline{Y})^2} = ${stdDevY.toLatex()} = ${stdDevY.valueOf().toFixed(3)}\\)<br>
+        相關係數的分子: \\(\\sum{(X_i - \\overline{X})(Y_i - \\overline{Y})} = ${numerator.toLatex()}\\)<br>
+        相關係數的分母: \\(\\sqrt{\\sum{(X_i - \\overline{X})^2} \\cdot \\sum{(Y_i - \\overline{Y})^2}} = ${sqrtDenominatorX.mul(sqrtDenominatorY).simplify().toLatex()}\\)<br>
+        相關係數: \\(r = \\frac{${numerator.toLatex()}}{${sqrtDenominatorX.mul(sqrtDenominatorY).simplify().toLatex()}} = ${intermediateFraction.toLatex()} = ${correlation.valueOf().toFixed(3)}\\)<br>
+        迴歸直線: \\(Y - \\overline{Y} = r \\cdot \\frac{\\sigma_Y}{\\sigma_X} \\cdot (X - \\overline{X}) \\quad Y - ${meanY.toLatex()} = (${correlation.mul(stdDevY).div(stdDevX).toLatex()}) \\cdot (X - ${meanX.toLatex()})\\)<br>
         標準式: \\(Y = ${regressionSlope.toLatex()}X + ${regressionIntercept.toLatex()}\\)
     `;
+
+
     document.querySelector('#resultValues').innerHTML = resultValues;
     MathJax.typesetPromise();
     drawScatterPlot(xValues, yValues, regressionSlope, regressionIntercept);
