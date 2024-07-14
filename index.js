@@ -100,7 +100,7 @@ function updateResultDisplay() {
         相關係數的分子: \\(\\sum{(X_i - \\overline{X})(Y_i - \\overline{Y})} = ${numerator.toLatex()} = ${numerator.valueOf().toFixed(3)}\\)<br>
         相關係數的分母X: \\(\\sqrt{\\sum{(X_i - \\overline{X})^2}} = \\sqrt{${denominatorX.toLatex()}} = ${sqrtDenominatorX.valueOf().toFixed(3)}\\)<br>
         相關係數的分母Y: \\(\\sqrt{\\sum{(Y_i - \\overline{Y})^2}} = \\sqrt{${denominatorY.toLatex()}} = ${sqrtDenominatorY.valueOf().toFixed(3)}\\)<br>
-        相關係數: \\(r = \\frac{\\sum{(X_i - \\overline{X})(Y_i - \\overline{Y})}}{\\sqrt{\\sum{(X_i - \\overline{X})^2}} \\cdot \\sqrt{\\sum{(Y_i - \\overline{Y})^2}}}\\ = \\frac{${numerator.toLatex()}}{${sqrtDenominatorX.mul(sqrtDenominatorY).simplify().toLatex()}} = ${intermediateFraction.toLatex()} = ${correlation.valueOf().toFixed(3)}\\)<br>
+        相關係數: \\(r = \\frac{\\sum{(X_i - \\overline{X})(Y_i - \\overline{Y})}}{\\sqrt{\\sum{(X_i - \\overline{X})^2}} \\cdot \\sqrt{\\sum{(Y_i - \\over線(Y_i - \\overline{Y})^2}}}\\ = \\frac{${numerator.toLatex()}}{${sqrtDenominatorX.mul(sqrtDenominatorY).simplify().toLatex()}} = ${intermediateFraction.toLatex()} = ${correlation.valueOf().toFixed(3)}\\)<br>
         迴歸直線: \\(Y - ${meanY.toLatex()} = (${regressionSlope.toLatex()})(X - ${meanX.toLatex()})\\)<br>
         標準式: \\(Y = ${regressionSlope.toLatex()}X + ${regressionIntercept.toLatex()}\\)
     `;
@@ -140,28 +140,51 @@ function drawScatterPlot(xValues, yValues, slope, intercept) {
             p.line(50, p.height - 50, p.width - 50, p.height - 50); // x-axis
             p.line(50, 50, 50, p.height - 50); // y-axis
 
+            // Draw axes labels
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(12);
+            for (let i = 0; i <= 10; i++) {
+                let x = p.map(i, 0, 10, 50, p.width - 50);
+                let y = p.map(i, 0, 10, p.height - 50, 50);
+                p.text(i, x, p.height - 30);
+                p.text(i, 30, y);
+            }
+
             // Scale functions
             const xMin = Math.min(...xValues.map(val => val.valueOf()));
             const xMax = Math.max(...xValues.map(val => val.valueOf()));
             const yMin = Math.min(...yValues.map(val => val.valueOf()));
             const yMax = Math.max(...yValues.map(val => val.valueOf()));
+
             const xScale = x => p.map(x, xMin, xMax, 50, p.width - 50);
             const yScale = y => p.map(y, yMin, yMax, p.height - 50, 50);
+
+            // Adjust scales to ensure proper display of points and regression line
+            const adjustedXMin = xMin.valueOf() - (xMax.valueOf() - xMin.valueOf()) * 0.1;
+            const adjustedXMax = xMax.valueOf() + (xMax.valueOf() - xMin.valueOf()) * 0.1;
+            const adjustedYMin = yMin.valueOf() - (yMax.valueOf() - yMin.valueOf()) * 0.1;
+            const adjustedYMax = yMax.valueOf() + (yMax.valueOf() - yMin.valueOf()) * 0.1;
+
+            const adjustedXScale = x => p.map(x, adjustedXMin, adjustedXMax, 50, p.width - 50);
+            const adjustedYScale = y => p.map(y, adjustedYMin, adjustedYMax, p.height - 50, 50);
 
             // Draw points
             p.fill(0);
             xValues.forEach((x, i) => {
-                p.ellipse(xScale(x.valueOf()), yScale(yValues[i].valueOf()), 5, 5);
+                let xPos = adjustedXScale(x.valueOf());
+                let yPos = adjustedYScale(yValues[i].valueOf());
+                p.ellipse(xPos, yPos, 5, 5);
+                p.text(`(${x.toFraction(true)}, ${yValues[i].toFraction(true)})`, xPos + 10, yPos - 10);
             });
 
             // Draw regression line
             p.stroke('magenta');
             p.strokeWeight(2);
             p.line(
-                xScale(xMin),
-                yScale(slope.mul(xMin).add(intercept).valueOf()),
-                xScale(xMax),
-                yScale(slope.mul(xMax).add(intercept).valueOf())
+                adjustedXScale(adjustedXMin),
+                adjustedYScale(slope.mul(adjustedXMin).add(intercept).valueOf()),
+                adjustedXScale(adjustedXMax),
+                adjustedYScale(slope.mul(adjustedXMax).add(intercept).valueOf())
             );
         };
     }, 'scatterPlot');
