@@ -7,7 +7,7 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-polyfills@0.1.43/polyfill.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/big-number@2.0.0/big-number.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script> <!-- 添加 p5.js -->
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js"></script>
@@ -32,22 +32,29 @@
         </div>
     </div>
 
-    <script type="module" src="index.js"></script>
     <script>
         window.MathJax = {
             tex: {
-                inlineMath: [['\\(', '\\)']],
-                displayMath: [['$$', '$$']],
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
             },
             svg: {
                 fontCache: 'global'
+            },
+            startup: {
+                ready: function () {
+                    MathJax.startup.defaultReady();
+                    setInputMode(1);
+                }
             }
         };
-
+    </script>
+    
+    <script>
         // Initialize input mode on page load
         window.addEventListener('load', function() {
             setInputMode(1);
         });
     </script>
+    <script type="module" src="index.js"></script>
 </body>
 </html>

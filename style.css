@@ -79,4 +79,11 @@ button:hover {
     border: 1px solid #cccccc;
     border-radius: 5px;
     margin-top: 20px;
+    overflow: auto; /* 允許滾動 */
+    -ms-overflow-style: none;  /* 針對IE和Edge瀏覽器隱藏滾動條 */
+    scrollbar-width: none;  /* 針對Firefox瀏覽器隱藏滾動條 */
+}
+
+.canvas-container::-webkit-scrollbar {
+    display: none; /* 針對Webkit瀏覽器隱藏滾動條 */
 }

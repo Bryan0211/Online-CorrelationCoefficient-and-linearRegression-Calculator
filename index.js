@@ -1,6 +1,6 @@
 import Fraction from './Fraction/fraction.js';
 
-let inputMode = 1; // Default to mode 1
+let inputMode = 1; // 預設為模式 1
 
 document.querySelector('#inputValues').addEventListener('input', function() {
     autoResizeTextarea(this);
@@ -55,7 +55,7 @@ function updateResultDisplay() {
 
     if (inputValues.length < 2 || inputValues[0].length !== 2) {
         document.querySelector('#resultValues').innerHTML = '請輸入至少兩組數值，每組包含兩個數值，以逗號或空格分隔。';
-        MathJax.typeset();
+        MathJax.typesetPromise();
         clearCanvas();
         return;
     }
@@ -97,15 +97,12 @@ function updateResultDisplay() {
         Y平均值: \\(\\overline{Y} = ${meanY.toLatex()} = ${meanY.valueOf().toFixed(3)}\\)<br>
         X標準差: \\(\\sigma_X = ${stdDevX.toLatex()} = ${stdDevX.valueOf().toFixed(3)}\\)<br>
         Y標準差: \\(\\sigma_Y = ${stdDevY.toLatex()} = ${stdDevY.valueOf().toFixed(3)}\\)<br>
-        相關係數的分子: \\(\\sum{(X_i - \\overline{X})(Y_i - \\overline{Y})} = ${numerator.toLatex()} = ${numerator.valueOf().toFixed(3)}\\)<br>
-        相關係數的分母X: \\(\\sqrt{\\sum{(X_i - \\overline{X})^2}} = \\sqrt{${denominatorX.toLatex()}} = ${sqrtDenominatorX.valueOf().toFixed(3)}\\)<br>
-        相關係數的分母Y: \\(\\sqrt{\\sum{(Y_i - \\overline{Y})^2}} = \\sqrt{${denominatorY.toLatex()}} = ${sqrtDenominatorY.valueOf().toFixed(3)}\\)<br>
-        相關係數: \\(r = \\frac{\\sum{(X_i - \\overline{X})(Y_i - \\overline{Y})}}{\\sqrt{\\sum{(X_i - \\overline{X})^2}} \\cdot \\sqrt{\\sum{(Y_i - \\over線(Y_i - \\overline{Y})^2}}}\\ = \\frac{${numerator.toLatex()}}{${sqrtDenominatorX.mul(sqrtDenominatorY).simplify().toLatex()}} = ${intermediateFraction.toLatex()} = ${correlation.valueOf().toFixed(3)}\\)<br>
-        迴歸直線: \\(Y - ${meanY.toLatex()} = (${regressionSlope.toLatex()})(X - ${meanX.toLatex()})\\)<br>
+        相關係數的分子: \\(\\sum{(X_i - \\overline{X})(Y_i - \\overline{Y})}\\ = \\frac{${numerator.toLatex()}}{${sqrtDenominatorX.mul(sqrtDenominatorY).simplify().toLatex()}} = ${intermediateFraction.toLatex()} = ${correlation.valueOf().toFixed(3)}\\)<br>
+        回歸直線: \\(Y - ${meanY.toLatex()} = (${regressionSlope.toLatex()})(X - ${meanX.toLatex()})\\)<br>
         標準式: \\(Y = ${regressionSlope.toLatex()}X + ${regressionIntercept.toLatex()}\\)
     `;
     document.querySelector('#resultValues').innerHTML = resultValues;
-    MathJax.typeset();
+    MathJax.typesetPromise();
     drawScatterPlot(xValues, yValues, regressionSlope, regressionIntercept);
 }
 
@@ -115,77 +112,172 @@ function clearCanvas() {
 }
 
 function drawScatterPlot(xValues, yValues, slope, intercept) {
-    const canvasContainer = document.getElementById('scatterPlot');
-    canvasContainer.innerHTML = ''; // 清除之前的畫布
+    const canvasContainer = document.querySelector('#scatterPlot');
+    canvasContainer.innerHTML = '';
 
     new p5(p => {
+        let zoom = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let lastMouseX, lastMouseY;
+
+        let xMin, xMax, yMin, yMax;
+        let xScale, yScale;
+
         p.setup = function() {
             const canvas = p.createCanvas(800, 600);
             canvas.parent('scatterPlot');
-            p.background(255);
 
-            // Draw grid
-            p.stroke(200);
-            p.strokeWeight(1);
-            for (let x = 0; x <= p.width; x += 50) {
-                p.line(x, 0, x, p.height);
-            }
-            for (let y = 0; y <= p.height; y += 50) {
-                p.line(0, y, p.width, y);
-            }
+            calculateDataRange();
+            setupScales();
 
-            // Draw axes
-            p.stroke(0);
-            p.strokeWeight(2);
-            p.line(50, p.height - 50, p.width - 50, p.height - 50); // x-axis
-            p.line(50, 50, 50, p.height - 50); // y-axis
-
-            // Draw axes labels
-            p.textAlign(p.CENTER, p.CENTER);
-            p.textSize(12);
-            for (let i = 0; i <= 10; i++) {
-                let x = p.map(i, 0, 10, 50, p.width - 50);
-                let y = p.map(i, 0, 10, p.height - 50, 50);
-                p.text(i, x, p.height - 30);
-                p.text(i, 30, y);
-            }
-
-            // Scale functions
-            const xMin = Math.min(...xValues.map(val => val.valueOf()));
-            const xMax = Math.max(...xValues.map(val => val.valueOf()));
-            const yMin = Math.min(...yValues.map(val => val.valueOf()));
-            const yMax = Math.max(...yValues.map(val => val.valueOf()));
-
-            const xScale = x => p.map(x, xMin, xMax, 50, p.width - 50);
-            const yScale = y => p.map(y, yMin, yMax, p.height - 50, 50);
-
-            // Adjust scales to ensure proper display of points and regression line
-            const adjustedXMin = xMin.valueOf() - (xMax.valueOf() - xMin.valueOf()) * 0.1;
-            const adjustedXMax = xMax.valueOf() + (xMax.valueOf() - xMin.valueOf()) * 0.1;
-            const adjustedYMin = yMin.valueOf() - (yMax.valueOf() - yMin.valueOf()) * 0.1;
-            const adjustedYMax = yMax.valueOf() + (yMax.valueOf() - yMin.valueOf()) * 0.1;
-
-            const adjustedXScale = x => p.map(x, adjustedXMin, adjustedXMax, 50, p.width - 50);
-            const adjustedYScale = y => p.map(y, adjustedYMin, adjustedYMax, p.height - 50, 50);
-
-            // Draw points
-            p.fill(0);
-            xValues.forEach((x, i) => {
-                let xPos = adjustedXScale(x.valueOf());
-                let yPos = adjustedYScale(yValues[i].valueOf());
-                p.ellipse(xPos, yPos, 5, 5);
-                p.text(`(${x.toFraction(true)}, ${yValues[i].toFraction(true)})`, xPos + 10, yPos - 10);
-            });
-
-            // Draw regression line
-            p.stroke('magenta');
-            p.strokeWeight(2);
-            p.line(
-                adjustedXScale(adjustedXMin),
-                adjustedYScale(slope.mul(adjustedXMin).add(intercept).valueOf()),
-                adjustedXScale(adjustedXMax),
-                adjustedYScale(slope.mul(adjustedXMax).add(intercept).valueOf())
-            );
+            canvas.mouseWheel(handleZoom);
+            canvas.mousePressed(startDrag);
+            canvas.mouseReleased(endDrag);
+            canvas.mouseMoved(handleDragging);
         };
+
+        function calculateDataRange() {
+            xMin = Math.min(...xValues.map(val => val.valueOf()), 0);
+            xMax = Math.max(...xValues.map(val => val.valueOf()), 0);
+            yMin = Math.min(...yValues.map(val => val.valueOf()), 0);
+            yMax = Math.max(...yValues.map(val => val.valueOf()), 0);
+
+            const xMargin = (xMax - xMin) * 0.1;
+            const yMargin = (yMax - yMin) * 0.1;
+            xMin -= xMargin;
+            xMax += xMargin;
+            yMin -= yMargin;
+            yMax += yMargin;
+        }
+
+        function setupScales() {
+            xScale = p.width / (xMax - xMin);
+            yScale = p.height / (yMax - yMin);
+        }
+
+        p.draw = function() {
+            p.background(255);
+            p.push();
+            p.translate(p.width / 2, p.height / 2);
+            p.scale(zoom);
+            p.translate(offsetX, offsetY);
+
+            drawGrid();
+            drawAxes();
+            drawPoints();
+            drawRegressionLine();
+
+            p.pop();
+        };
+
+        function drawGrid() {
+            p.stroke(220);
+            p.strokeWeight(1 / zoom);
+
+            for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+                const screenX = (x - xMin) * xScale - p.width / 2;
+                p.line(screenX, -p.height / 2, screenX, p.height / 2);
+            }
+
+            for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+                const screenY = p.height / 2 - (y - yMin) * yScale;
+                p.line(-p.width / 2, screenY, p.width / 2, screenY);
+            }
+        }
+
+        function drawAxes() {
+            p.stroke(0);
+            p.strokeWeight(2 / zoom);
+
+            const xAxisY = p.height / 2 - (0 - yMin) * yScale;
+            p.line(-p.width / 2, xAxisY, p.width / 2, xAxisY);
+
+            const yAxisX = (0 - xMin) * xScale - p.width / 2;
+            p.line(yAxisX, -p.height / 2, yAxisX, p.height / 2);
+
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(12 / zoom);
+
+            for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+                const screenX = (x - xMin) * xScale - p.width / 2;
+                p.line(screenX, xAxisY - 5 / zoom, screenX, xAxisY + 5 / zoom);
+                p.text(x, screenX, xAxisY + 20 / zoom);
+            }
+
+            for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+                const screenY = p.height / 2 - (y - yMin) * yScale;
+                p.line(yAxisX - 5 / zoom, screenY, yAxisX + 5 / zoom, screenY);
+                p.text(y, yAxisX - 20 / zoom, screenY);
+            }
+        }
+
+        function drawPoints() {
+            p.noStroke();
+            p.fill(0, 0, 255);
+            xValues.forEach((x, i) => {
+                const screenX = (x.valueOf() - xMin) * xScale - p.width / 2;
+                const screenY = p.height / 2 - (yValues[i].valueOf() - yMin) * yScale;
+                p.ellipse(screenX, screenY, 8 / zoom, 8 / zoom);
+                
+                // 顯示座標點
+                p.textAlign(p.LEFT, p.BOTTOM);
+                p.textSize(12 / zoom);
+                p.fill(0);
+                p.text(`(${x.valueOf().toFixed(2)}, ${yValues[i].valueOf().toFixed(2)})`, screenX + 10 / zoom, screenY - 10 / zoom);
+            });
+        }
+
+        function drawRegressionLine() {
+            p.stroke(255, 0, 0);
+            p.strokeWeight(2 / zoom);
+            const y1 = slope.mul(xMin).add(intercept).valueOf();
+            const y2 = slope.mul(xMax).add(intercept).valueOf();
+            const x1 = (xMin - xMin) * xScale - p.width / 2;
+            const x2 = (xMax - xMin) * xScale - p.width / 2;
+            const screenY1 = p.height / 2 - (y1 - yMin) * yScale;
+            const screenY2 = p.height / 2 - (y2 - yMin) * yScale;
+            p.line(x1, screenY1, x2, screenY2);
+        }
+
+        function handleZoom(event) {
+            const zoomFactor = event.deltaY > 0 ? 0.95 : 1.05;
+            const mouseX = event.offsetX - p.width / 2;
+            const mouseY = event.offsetY - p.height / 2;
+            
+            const newZoom = zoom * zoomFactor;
+            const newOffsetX = mouseX - (mouseX - offsetX) * (newZoom / zoom);
+            const newOffsetY = mouseY - (mouseY - offsetY) * (newZoom / zoom);
+
+            zoom = newZoom;
+            offsetX = newOffsetX;
+            offsetY = newOffsetY;
+
+            event.preventDefault();
+        }
+
+        function startDrag() {
+            isDragging = true;
+            lastMouseX = p.mouseX;
+            lastMouseY = p.mouseY;
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        function handleDragging() {
+            if (isDragging) {
+                offsetX += (p.mouseX - lastMouseX) / zoom;
+                offsetY += (p.mouseY - lastMouseY) / zoom;
+                lastMouseX = p.mouseX;
+                lastMouseY = p.mouseY;
+            }
+        }
     }, 'scatterPlot');
 }
+
+// 初始化
+updatePlaceholderText();
+updateActiveButton();
