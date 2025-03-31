@@ -81,8 +81,10 @@ function updateResultDisplay() {
         denominatorY = denominatorY.add(dy.mul(dy)).simplify();
     }
 
-    const sqrtDenominatorX = new Fraction(Math.sqrt(denominatorX.div(n).valueOf())).simplify();
-    const sqrtDenominatorY = new Fraction(Math.sqrt(denominatorY.div(n).valueOf())).simplify();
+    const numberX = new Fraction(xValues.length);
+    const numberY = new Fraction(yValues.length);
+    const sqrtDenominatorX = new Fraction(Math.sqrt(denominatorX.div(numberX).valueOf())).simplify();
+    const sqrtDenominatorY = new Fraction(Math.sqrt(denominatorY.div(numberY).valueOf())).simplify();
     const intermediateFraction = numerator.div(sqrtDenominatorX.mul(sqrtDenominatorY).simplify());
     const correlation = intermediateFraction.simplify();
 
